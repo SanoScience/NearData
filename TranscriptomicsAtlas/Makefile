@@ -30,6 +30,10 @@ sync-star:
 	aws s3 sync src/Consumer s3://neardata-src/source/STAR/Consumer
 	aws s3 cp src/scripts/STAR_count_normalization.R s3://neardata-src/source/STAR/DESeq2/STAR_count_normalization.R
 
+sync-debug:
+	aws s3 sync src/Consumer s3://neardata-src/debug/STAR/Consumer
+	aws s3 cp src/scripts/STAR_count_normalization.R s3://neardata-src/debug/STAR/DESeq2/STAR_count_normalization.R
+
 ### TEST CONTAINER ###
 test:
 	docker build -t salmon_test -f Dockerfile_test .
