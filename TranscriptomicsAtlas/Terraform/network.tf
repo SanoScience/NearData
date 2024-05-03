@@ -26,6 +26,14 @@ variable "subnets" {
       "cidr_block"        = "10.0.4.0/24"
       "availability_zone" = "us-east-1d"
     }
+    "Subnet_5" = {
+      "cidr_block"        = "10.0.5.0/24"
+      "availability_zone" = "us-east-1e"
+    }
+    "Subnet_6" = {
+      "cidr_block"        = "10.0.6.0/24"
+      "availability_zone" = "us-east-1f"
+    }
   }
 }
 
