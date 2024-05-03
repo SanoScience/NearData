@@ -1,6 +1,5 @@
 FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
-ENV RUN_IN_CONTAINER="True"
 WORKDIR /opt/TAtlas
 
 ### PYTHON MODULES and utils

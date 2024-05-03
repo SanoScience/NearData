@@ -12,6 +12,5 @@ COPY docker_cwagent_config.json /etc/cwagentconfig/default-linux-config.json
 COPY credentials /root/.aws/credentials
 
 ENV AWS_REGION="us-east-1"
-ENV RUN_IN_CONTAINER="True"
 
 ENTRYPOINT ["/opt/aws/amazon-cloudwatch-agent/bin/start-amazon-cloudwatch-agent"]
