@@ -1,7 +1,7 @@
 resource "aws_launch_template" "STAR_lt" {
   name          = "STAR_lt"
   image_id      = "ami-0d38cb4986d8ed83d"
-  instance_type = "r6a.2xlarge"
+  instance_type = "r7a.2xlarge"
   key_name      = "neardata-pk2"
   user_data     = base64encode(file("init_STAR.sh"))
   ebs_optimized = true
@@ -29,7 +29,7 @@ resource "aws_launch_template" "STAR_lt" {
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs {
-      volume_size = 400
+      volume_size = 550
       volume_type = "gp3"
       iops        = 3000
       throughput  = 500
