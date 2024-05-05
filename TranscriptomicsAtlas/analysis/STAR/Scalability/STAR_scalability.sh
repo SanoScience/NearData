@@ -13,7 +13,7 @@ echo "n_threads,execution_time_seconds,srr_id,srr_size_MiB,ebs_throughput,ebs_io
 ebs_throughput=$(aws ec2 describe-volumes --volume-ids vol-0578083bbae20e7b4 --query 'Volumes[*].Throughput' --region us-east-1 | jq -r '.[0]' | awk '{print $1}')
 ebs_iops=$(aws ec2 describe-volumes --volume-ids vol-0578083bbae20e7b4 --query 'Volumes[*].Iops' --region us-east-1 | jq -r '.[0]')
 instance_id=$(wget -q -O - http://169.254.169.254/latest/meta-data/instance-id)
-instance_type=$(aws ec2 describe-instances --instance-ids $instance_id --query 'Reservations[*].Instances[*].[InstanceType]' --output text)
+instance_type=$(aws ec2 describe-instances --instance-ids $instance_id --query 'Reservations[*].Instances[*].[InstanceType]' --output text --region us-east-1)
 
 STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_111/ --genomeLoad LoadAndExit --outFileNamePrefix $work_dir/STAR_load_index_log/
 
