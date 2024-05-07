@@ -5,7 +5,7 @@ from datetime import datetime
 
 import boto3
 
-from aws_utils import srr_id_in_metadata_table, get_instance_id, get_instance_type, get_aws_instance_metadata
+from aws_utils import srr_id_in_metadata_table, get_instance_id, get_aws_instance_metadata
 from config import nproc, index_release, sra_dir, fastq_dir, metadata_dir
 from logger import logger
 from utils import PipelineError
@@ -52,11 +52,14 @@ class Pipeline:
         self.metadata["tissue_name"] = self.tissue_name
         self.metadata["instance_id"] = get_instance_id()
         self.metadata["nproc"] = nproc
-        self.metadata["instance_type"] = get_instance_type()
         self.metadata["index_release"] = index_release
         self.metadata["execution_mode"] = os.environ["execution_mode"]
         self.metadata["SRR_filesize_bytes"] = self.measure_sra_size()
         self.metadata["fastq_filesize_bytes"] = self.measure_fastq_size()
+        if os.environ["execution_mode"] == "EC2":
+            get_aws_instance_metadata(self.metadata)
+        elif os.environ["execution_mode"] == "HPC_container":
+            self.metadata["instance_type"] = os.environ["SLURM_CLUSTER_NAME"]
         logger.info("Saving metadata")
 
         with open(f'{metadata_dir}/{self.srr_id}_metadata.json', "w+") as f:
