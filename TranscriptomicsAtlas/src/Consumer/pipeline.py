@@ -5,7 +5,7 @@ from datetime import datetime
 
 import boto3
 
-from aws_utils import srr_id_in_metadata_table, get_instance_id, get_instance_type
+from aws_utils import srr_id_in_metadata_table, get_instance_id, get_instance_type, get_aws_instance_metadata
 from config import nproc, index_release, sra_dir, fastq_dir, metadata_dir
 from logger import logger
 from utils import PipelineError
@@ -40,10 +40,10 @@ class Pipeline:
     def check_if_file_already_processed(self):
         logger.info("Checking if the pipeline has already been run.")
         if not srr_id_in_metadata_table(self.metadata_table, self.srr_id):
-            logger.info("SRR_id not found in metadata table, starting the pipeline")
+            logger.info(f"SRR_id={self.srr_id} not found in metadata table, starting the pipeline")
             return False
         else:
-            logger.info("SRR_id found in metadata table, skipping.")
+            logger.info(f"SRR_id={self.srr_id} found in metadata table, skipping.")
             return True
 
     def gather_metadata(self):
