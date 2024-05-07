@@ -27,6 +27,9 @@ def prefetch(srr_id):
     elif "Access denied - please request permission" in prefetch_result.stderr:
         raise PipelineError(prefetch_result.stderr, "SRA file not public")
 
+    if prefetch_result.returncode != 0:
+        raise PipelineError(prefetch_result.stderr, "prefetch error")
+
     return prefetch_result
 
 
@@ -38,8 +41,14 @@ def fasterq_dump(srr_id, metadata=None):
         capture_output=True, text=True, env=my_env, cwd=work_dir
     )
 
+    if fasterq_result.returncode != 0:
+        raise PipelineError(fasterq_result.stderr, "fasterq-dump error")
+
     if metadata:
-        metadata["n_spots"] = int(fasterq_result.stderr.split("\n")[0].split(":")[1].strip().replace(",", ""))
+        try:
+            metadata["n_spots"] = int(fasterq_result.stderr.split("\n")[0].split(":")[1].strip().replace(",", ""))
+        except IndexError:
+            raise PipelineError("n_spots not found. Aborting the pipeline.", "n_spots not found")
 
     return fasterq_result
 
@@ -69,6 +78,9 @@ def salmon(srr_id, metadata):
     if "Found no concordant and consistent mappings." in salmon_output:
         raise PipelineError(f"Found no concordant and consistent mappings for {srr_id}. Aborting the pipeline.",
                             "Found no concordant and consistent mappings")
+
+    if salmon_result.returncode != 0:
+        raise PipelineError(salmon_result.stderr, "Salmon error")
 
     pattern = r'Mapping rate = (.*)%'
     match = re.search(pattern, salmon_output)
@@ -156,7 +168,7 @@ def star(srr_id, metadata):
                 curr_n_spots = float(curr_row[4])
                 curr_mapping_rate = float(curr_row[6][:-1])
 
-                if curr_mapping_rate < 30 and curr_n_spots > 0.10*metadata["n_spots"]:
+                if curr_mapping_rate < 30 and curr_n_spots > 0.10 * metadata["n_spots"]:
                     logger.warning("Early stopping check detects mapping rate below 30%. Aborting.")
                     process.terminate()
                     early_stopped = True
@@ -165,7 +177,7 @@ def star(srr_id, metadata):
                     break
                 elif curr_mapping_rate >= 30:
                     logger.info(f"Current mapping rate above 30 ({curr_mapping_rate}%). Continuing.")
-                elif curr_n_spots <= 0.10*metadata["n_spots"]:
+                elif curr_n_spots <= 0.10 * metadata["n_spots"]:
                     logger.info(f"Current n_spots processed below 10%. Continuing.")
 
         thread = threading.Thread(target=star_early_stopping, args=(star_process,))
@@ -178,6 +190,11 @@ def star(srr_id, metadata):
             raise PipelineError("Early stopping due to mapping rate below 30%.", "Early stopping")
     else:
         stdout, stderr = star_process.communicate()
+
+    if "not enough memory for BAM sorting" in stderr:
+        raise PipelineError(stderr, "BAM sort OOM")
+    if star_process.returncode != 0:
+        raise PipelineError(stderr, "STAR error")
 
     log_final_path = f"{star_dir}/{srr_id}/Log.final.out"
     log_out_path = f"{star_dir}/{srr_id}/Log.out"
@@ -207,6 +224,9 @@ def deseq2_star(srr_id):
         capture_output=True, text=True, env=my_env, cwd=work_dir
     )
 
+    if deseq2_result.returncode != 0:
+        raise PipelineError(deseq2_result.stderr, "DESeq2 error")
+
     return deseq2_result
 
 
@@ -216,5 +236,8 @@ def deseq2_salmon(srr_id):
         ["Rscript", "/opt/TAtlas/DESeq2/Salmon_count_normalization.R", srr_id],
         capture_output=True, text=True, env=my_env, cwd=work_dir
     )
+
+    if deseq2_result.returncode != 0:
+        raise PipelineError(deseq2_result.stderr, "DESeq2 error")
 
     return deseq2_result
