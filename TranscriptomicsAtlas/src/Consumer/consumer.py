@@ -7,6 +7,7 @@ import requests
 if os.environ["execution_mode"] == "EC2":
     os.environ['AWS_DEFAULT_REGION'] = requests.get('http://169.254.169.254/latest/meta-data/placement/region').text
 
+from aws_utils import terminate_itself_in_asg
 from config import nproc
 from logger import logger
 from salmon_pipeline import SalmonPipeline
@@ -16,7 +17,7 @@ from utils import PipelineError
 logger.info(f"Nproc={nproc}")
 
 
-def process_messages(messages):
+def process_message(messages):
     for message in messages:
         logger.info(f"Received msg={message.body}")
         if os.environ["pipeline_type"] == "Salmon":
@@ -28,7 +29,7 @@ def process_messages(messages):
 
         if pipeline.check_if_file_already_processed():
             message.delete()
-            continue
+            return
 
         try:
             pipeline.start()
@@ -54,31 +55,29 @@ def start_pipeline(mode="job"):
         logger.info("Awaiting messages")
         if mode == "job":
             messages = queue.receive_messages(MaxNumberOfMessages=1, WaitTimeSeconds=5)
-            process_messages(messages)
-        if mode == "ec2":
-            while True:
-                messages = queue.receive_messages(MaxNumberOfMessages=1, WaitTimeSeconds=5)
-                process_messages(messages)
-        elif mode == "HPC_container":
+            if len(messages) != 0:
+                process_message(messages[0])
+        elif mode == "EC2" or mode == "HPC_container":
             tries = 0
-            max_tries = 15
-            retry_interval = 5
-
-            while tries < max_tries:
+            while tries < 15:
                 messages = queue.receive_messages(MaxNumberOfMessages=1, WaitTimeSeconds=5)
                 if len(messages) != 0:
-                    process_messages(messages)
+                    process_message(messages[0])
                     tries = 0
                 else:
-                    time.sleep(retry_interval)
+                    time.sleep(5)
                     tries += 1
 
-            logger.info("No more messages to consume. Exiting")
+            logger.info("No more messages. Terminating.")
+
+            if mode == "EC2":
+                terminate_itself_in_asg(decrease_capacity=True)
 
     except Exception as e:
-        logger.warning(e)
+        logger.warning(f"Terminating instance due to error {e}")
+        terminate_itself_in_asg(decrease_capacity=False)
 
 
 if __name__ == "__main__":
-    mode = os.environ.get("execution_mode", "ec2")
+    mode = os.environ.get("execution_mode", "EC2")
     start_pipeline(mode=mode)

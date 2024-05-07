@@ -32,6 +32,12 @@ def get_ssm_parameter(param_name):
     return param_value
 
 
+def terminate_itself_in_asg(decrease_capacity):
+    asg = boto3.client("autoscaling")
+    instance_id = requests.get('http://169.254.169.254/latest/meta-data/instance-id').text
+    asg.terminate_instance_in_auto_scaling_group(InstanceId=instance_id, ShouldDecrementDesiredCapacity=decrease_capacity)
+
+
 def get_aws_instance_metadata(metadata):
     instance_id = requests.get(aws_metadata_url + 'instance-id').text
 
