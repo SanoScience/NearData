@@ -8,7 +8,8 @@ if os.environ["execution_mode"] == "EC2":
     os.environ['AWS_DEFAULT_REGION'] = requests.get('http://169.254.169.254/latest/meta-data/placement/region').text
 
 from aws_utils import terminate_itself_in_asg
-from config import nproc
+from interruption_monitor import SpotInterruptionMonitor
+from config import nproc, INTERRUPTION_MONITORING
 from logger import logger
 from salmon_pipeline import SalmonPipeline
 from STAR_pipeline import STARPipeline
@@ -17,8 +18,14 @@ from utils import PipelineError
 logger.info(f"Nproc={nproc}")
 
 
-def process_message(messages):
-    for message in messages:
+def process_message(message):
+    try:
+        if INTERRUPTION_MONITORING == "True" and os.environ["execution_mode"] == "EC2":
+            monitor = SpotInterruptionMonitor()
+            logger.info("Starting interruption monitor.")
+            monitor.set_message(message)
+            monitor.run()
+
         logger.info(f"Received msg={message.body}")
         if os.environ["pipeline_type"] == "Salmon":
             pipeline = SalmonPipeline(message.body)
@@ -36,16 +43,23 @@ def process_message(messages):
         except PipelineError as e:
             logger.warning(e)
             pipeline.metadata["error_type"] = e.error_type
-        except Exception as e:
-            logger.warning(e)
-            exit()
 
         pipeline.gather_metadata()
         pipeline.upload_metadata()
         pipeline.clean()
 
         message.delete()
+
+        if INTERRUPTION_MONITORING == "True" and os.environ["execution_mode"] == "EC2":
+            logger.info("Stopping interruption monitor.")
+            monitor.stop()
+
         logger.info("Processed and deleted msg. Awaiting next one")
+
+    except Exception as e:
+        message.delete()   # todo move to dead letter queue
+        logger.warning(f"Terminating instance due to error {e} with message {message.body}")
+        terminate_itself_in_asg(decrease_capacity=False)
 
 
 def start_pipeline(mode="job"):
