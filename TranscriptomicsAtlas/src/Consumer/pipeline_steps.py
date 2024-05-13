@@ -37,7 +37,7 @@ def prefetch(srr_id):
 @log_output
 def fasterq_dump(srr_id, metadata=None):
     fasterq_result = subprocess.run(
-        ["fasterq-dump", srr_id, "--outdir", fastq_dir, "--threads", nproc],
+        ["fasterq-dump", srr_id, "--outdir", fastq_dir, "--threads", nproc, "--force"],
         capture_output=True, text=True, env=my_env, cwd=work_dir
     )
 
