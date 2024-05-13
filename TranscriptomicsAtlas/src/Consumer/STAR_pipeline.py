@@ -1,6 +1,6 @@
 import os
 
-from config import sra_dir, fastq_dir, star_dir, deseq2_dir
+from config import sra_dir, fastq_dir, star_dir, deseq2_dir, PIPELINE_TYPE
 from logger import logger
 from pipeline import Pipeline
 from pipeline_steps import prefetch, fasterq_dump, star, deseq2_star, load_star_index
@@ -8,7 +8,7 @@ from utils import clean_dir
 
 
 class STARPipeline(Pipeline):
-    if os.environ["pipeline_type"] == "STAR":
+    if PIPELINE_TYPE == "STAR":
         load_star_index()
 
     def __init__(self, message):
