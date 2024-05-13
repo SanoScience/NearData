@@ -19,7 +19,7 @@ class TestPipeline(BaseCase):
         entries = [{"Id": srr_id, "MessageBody": f"{tissue_name}-{srr_id}"}]
         self.queue.send_messages(Entries=entries)
 
-        start_pipeline(mode="job")
+        start_pipeline()
 
     def test_prefetch_big_sra_file(self):
         srr_id = "SRR13179686"  # 37 GB in size
@@ -44,7 +44,7 @@ class TestPipeline(BaseCase):
         self.table.put_item(Item=item)
         self.queue.send_messages(Entries=entries)
 
-        start_pipeline(mode="job")
+        start_pipeline()
 
         assert item == (self.table.get_item(Key={"SRR_id": self.srr_id}))["Item"]
 

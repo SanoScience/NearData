@@ -7,6 +7,7 @@ import boto3
 
 from aws_utils import srr_id_in_metadata_table, get_instance_id, get_aws_instance_metadata
 from config import nproc, index_release, sra_dir, fastq_dir, metadata_dir, EXECUTION_MODE
+from pipeline_steps import prefetch, fasterq_dump
 from logger import logger
 from utils import PipelineError
 
@@ -25,6 +26,15 @@ class Pipeline:
     def __init__(self, message):
         self.tissue_name, self.srr_id = message.split("-")
         self.metadata = dict()
+
+    def prestage(self):
+        self.make_timestamps(
+            prefetch, self.srr_id
+        )
+
+        self.make_timestamps(
+            fasterq_dump, self.srr_id, self.metadata
+        )
 
     def make_timestamps(self, pipeline_func, *args, **kwargs):
         self.metadata[pipeline_func.__name__ + "_start_time"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")

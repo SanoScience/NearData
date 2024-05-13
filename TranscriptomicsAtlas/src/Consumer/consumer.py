@@ -9,8 +9,9 @@ if os.environ["execution_mode"] == "EC2":
 
 from aws_utils import terminate_itself_in_asg
 from interruption_monitor import SpotInterruptionMonitor
-from config import nproc, INTERRUPTION_MONITORING
+from config import nproc, INTERRUPTION_MONITORING, PIPELINE_TYPE, EXECUTION_MODE
 from logger import logger
+from pipeline import Pipeline
 from salmon_pipeline import SalmonPipeline
 from STAR_pipeline import STARPipeline
 from utils import PipelineError
@@ -18,21 +19,15 @@ from utils import PipelineError
 logger.info(f"Nproc={nproc}")
 
 
-def process_message(message):
+def process_message_ec2(pipeline_class, message):
     try:
-        if INTERRUPTION_MONITORING == "True" and os.environ["execution_mode"] == "EC2":
+        pipeline = pipeline_class(message.body)
+
+        if INTERRUPTION_MONITORING == "True":
             monitor = SpotInterruptionMonitor()
             logger.info("Starting interruption monitor.")
             monitor.set_message(message)
             monitor.run()
-
-        logger.info(f"Received msg={message.body}")
-        if os.environ["pipeline_type"] == "Salmon":
-            pipeline = SalmonPipeline(message.body)
-        elif os.environ["pipeline_type"] == "STAR":
-            pipeline = STARPipeline(message.body)
-        else:
-            raise ValueError("Invalid pipeline type")
 
         if pipeline.check_if_file_already_processed():
             message.delete()
@@ -50,7 +45,7 @@ def process_message(message):
 
         message.delete()
 
-        if INTERRUPTION_MONITORING == "True" and os.environ["execution_mode"] == "EC2":
+        if INTERRUPTION_MONITORING == "True":
             logger.info("Stopping interruption monitor.")
             monitor.stop()
 
@@ -62,21 +57,67 @@ def process_message(message):
         terminate_itself_in_asg(decrease_capacity=False)
 
 
-def start_pipeline(mode="job"):
+def process_message_hpc(pipeline_class, message):
     try:
-        logger.info(f"Running in {mode} mode")
+        pipeline = pipeline_class(message.body)
+        logger.info(f"Received msg={message.body}")
+
+        if pipeline.check_if_file_already_processed():
+            message.delete()
+            return
+
+        try:
+            if PIPELINE_TYPE == "prestage":
+                pipeline.prestage()
+            else:
+                pipeline.alignment()
+
+        except PipelineError as e:
+            logger.warning(e)
+            pipeline.metadata["error_type"] = e.error_type
+
+        pipeline.gather_metadata()
+        pipeline.upload_metadata()
+
+        message.delete()
+
+        logger.info("Processed and deleted msg. Awaiting next one")
+
+    except Exception as e:
+        message.delete()
+        logger.warning(f"Terminating job due to error {e} with message {message.body}")
+
+
+def start_pipeline():
+    try:
+        logger.info(f"Running in {EXECUTION_MODE} mode")
         queue = boto3.resource("sqs").get_queue_by_name(QueueName=os.environ["queue_name"])
         logger.info("Awaiting messages")
-        if mode == "job":
+
+        if EXECUTION_MODE == "EC2" or EXECUTION_MODE == "test":
+            process_message = process_message_ec2
+        else:
+            process_message = process_message_hpc
+
+        if PIPELINE_TYPE == "prestage":
+            pipeline_class = Pipeline
+        elif PIPELINE_TYPE == "Salmon":
+            pipeline_class = SalmonPipeline
+        elif PIPELINE_TYPE == "STAR":
+            pipeline_class = STARPipeline
+        else:
+            raise ValueError("Invalid pipeline type")
+
+        if EXECUTION_MODE == "test":
             messages = queue.receive_messages(MaxNumberOfMessages=1, WaitTimeSeconds=5)
             if len(messages) != 0:
-                process_message(messages[0])
-        elif mode == "EC2" or mode == "HPC_container":
+                process_message(pipeline_class, messages[0])
+        else:
             tries = 0
-            while tries < 15:
+            while tries < 12:
                 messages = queue.receive_messages(MaxNumberOfMessages=1, WaitTimeSeconds=5)
                 if len(messages) != 0:
-                    process_message(messages[0])
+                    process_message(pipeline_class, messages[0])
                     tries = 0
                 else:
                     time.sleep(5)
@@ -84,14 +125,14 @@ def start_pipeline(mode="job"):
 
             logger.info("No more messages. Terminating.")
 
-            if mode == "EC2":
+            if EXECUTION_MODE == "EC2":
                 terminate_itself_in_asg(decrease_capacity=True)
 
     except Exception as e:
-        logger.warning(f"Terminating instance due to error {e}")
-        terminate_itself_in_asg(decrease_capacity=False)
+        logger.warning(f"Terminating instance/job due to error {e}")
+        if EXECUTION_MODE == "EC2":
+            terminate_itself_in_asg(decrease_capacity=False)
 
 
 if __name__ == "__main__":
-    mode = os.environ.get("execution_mode", "EC2")
-    start_pipeline(mode=mode)
+    start_pipeline()

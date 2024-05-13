@@ -34,6 +34,18 @@ class STARPipeline(Pipeline):
         self.upload_logs_to_s3()
         self.upload_counts_to_s3()
 
+    def alignment(self):
+        self.make_timestamps(
+            star, self.srr_id, self.metadata
+        )
+
+        self.make_timestamps(
+            deseq2_star, self.srr_id
+        )
+
+        self.upload_logs_to_s3()
+        self.upload_counts_to_s3()
+
     def upload_counts_to_s3(self):
         logger.info("S3 upload counts starting")
         mr_folder = "high_mapping_rate" if self.metadata["STAR_mapping_rate [%]"] >= 30 else "low_mapping_rate"
