@@ -4,7 +4,7 @@ WORKDIR /opt/TAtlas
 
 ### Python modules and utils
 RUN apt-get update && \
-    apt-get install wget ca-certificates python3-pip -y --no-install-recommends && \
+    apt-get install wget ca-certificates software-properties-common dirmngr python3-pip -y --no-install-recommends && \
     pip3 install boto3 watchtower requests backoff --no-cache-dir
 
 ### SRA-TOOLKIT
@@ -12,14 +12,11 @@ RUN wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubunt
         | tar -zx -C /opt/TAtlas/ && \
     echo 'export PATH="$PATH":/opt/TAtlas/sratoolkit.3.0.1-ubuntu64/bin' >> ~/.bashrc
 
-### SALMON
-RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz -qO -  \
-        | tar -zx -C /opt/TAtlas/ && \
-    echo 'export PATH="$PATH":/opt/TAtlas/salmon-latest_linux_x86_64/bin' >> ~/.bashrc
-
 ### R
+RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 RUN echo "LC_ALL=C.UTF-8 R" >> /etc/environment
-RUN apt-get install r-base-dev -y --no-install-recommends
+RUN apt-get install r-base-dev=4.4.0-1.2204.0 -y --no-install-recommends
 
 ### R packages
 # 'DESeq2', 'RCurl', 'RcppArmadillo' (libraries required by DESeq2) require
@@ -27,16 +24,19 @@ RUN apt-get install libxml2-dev libssl-dev libcurl4-openssl-dev libopenblas-dev 
 RUN Rscript -e 'install.packages(c("readr", "dplyr", "BiocManager", "jsonlite", "data.table"))'
 RUN Rscript -e 'BiocManager::install(c("DESeq2", "tximport"))'
 
-#### STAR
+### SALMON
+RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz -qO -  \
+        | tar -zx -C /opt/TAtlas/ && \
+    echo 'export PATH="$PATH":/opt/TAtlas/salmon-latest_linux_x86_64/bin' >> ~/.bashrc
+
+### STAR
 RUN wget https://github.com/alexdobin/STAR/archive/2.7.10b.tar.gz -O - | tar -zx -C /opt/TAtlas
 RUN echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/bin/Linux_x86_64' >> ~/.bashrc
 
 RUN pip3 install moto[sqs,s3,dynamodb]==5.0.1 pytest==8.0.0 --no-cache-dir
 
 RUN mkdir /root/.aws
-RUN echo "[default]\n \
-aws_access_key_id = test\n \
-aws_secret_access_key = test" >> /root/.aws/credentials
+RUN echo "[default]\n aws_access_key_id = test\n aws_secret_access_key = test" >> /root/.aws/credentials
 
 # Config for sratoolkit untill I find a way to configure it using cli/bash
 COPY data/.ncbi /root/.ncbi
@@ -47,7 +47,7 @@ ENV AWS_DEFAULT_REGION="us-east-1"
 ENV queue_name="NearData_queue"
 ENV s3_bucket_name="neardata-salmon-ec2-results"
 ENV dynamodb_metadata_table="neardata-test-table"
-ENV execution_mode="Container"
+ENV execution_mode="test"
 ENV index_release="111"
 
 COPY src/scripts/ /opt/TAtlas/DESeq2/
