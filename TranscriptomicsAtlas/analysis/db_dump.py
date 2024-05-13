@@ -40,8 +40,8 @@ def dump_metadata_table(table_name):
                        "fasterq_dump_end_time",
                        "star_start_time",
                        "star_end_time",
-                       "deseq2_star_start_time",
-                       "deseq2_star_end_time",
+                       "deseq2_start_time",
+                       "deseq2_end_time",
                        "EBS_Iops",
                        "EBS_Size",
                        "EBS_Throughput",
@@ -66,8 +66,8 @@ def dump_metadata_table(table_name):
                          "fasterq_dump_end_time",
                          "salmon_start_time",
                          "salmon_end_time",
-                         "deseq2_salmon_start_time",
-                         "deseq2_salmon_end_time"]
+                         "deseq2_start_time",
+                         "deseq2_end_time"]
 
     cols_order = cols_order_star
     if "error_type" in df.columns:

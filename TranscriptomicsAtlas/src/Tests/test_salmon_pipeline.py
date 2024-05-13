@@ -1,7 +1,7 @@
 import pytest
 from moto import mock_aws
 
-from pipeline_steps import prefetch, fasterq_dump, salmon, deseq2_salmon
+from pipeline_steps import prefetch, fasterq_dump, salmon, deseq2
 from test_pipeline import TestPipeline
 
 
@@ -30,4 +30,4 @@ class TestSalmonPipeline(TestPipeline):
         prefetch(self.srr_id)
         fasterq_dump(self.srr_id)
         salmon(self.srr_id, metadata={})
-        deseq2_salmon(self.srr_id)
+        deseq2(self.srr_id)

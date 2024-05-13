@@ -3,7 +3,7 @@ import os
 from config import sra_dir, fastq_dir, star_dir, deseq2_dir, PIPELINE_TYPE
 from logger import logger
 from pipeline import Pipeline
-from pipeline_steps import prefetch, fasterq_dump, star, deseq2_star, load_star_index
+from pipeline_steps import prefetch, fasterq_dump, star, deseq2, load_star_index
 from utils import clean_dir
 
 
@@ -28,7 +28,7 @@ class STARPipeline(Pipeline):
         )
 
         self.make_timestamps(
-            deseq2_star, self.srr_id
+            deseq2, self.srr_id
         )
 
         self.upload_logs_to_s3()
@@ -40,7 +40,7 @@ class STARPipeline(Pipeline):
         )
 
         self.make_timestamps(
-            deseq2_star, self.srr_id
+            deseq2, self.srr_id
         )
 
         self.upload_logs_to_s3()

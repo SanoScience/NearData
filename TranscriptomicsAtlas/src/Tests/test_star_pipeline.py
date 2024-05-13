@@ -1,7 +1,7 @@
 import pytest
 from moto import mock_aws
 
-from pipeline_steps import prefetch, fasterq_dump, star, deseq2_star
+from pipeline_steps import prefetch, fasterq_dump, star, deseq2
 from test_pipeline import TestPipeline
 
 
@@ -39,4 +39,4 @@ class TestSTARPipeline(TestPipeline):
         prefetch(self.star_srr_id)
         fasterq_dump(self.star_srr_id)
         star(self.star_srr_id, metadata={})
-        deseq2_star(self.star_srr_id)
+        deseq2(self.star_srr_id)

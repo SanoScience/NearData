@@ -7,7 +7,7 @@ from datetime import datetime
 
 import backoff
 
-from config import my_env, work_dir, nproc, fastq_dir, salmon_dir, salmon_index_dir, star_index_dir, star_dir, EARLY_STOPPING
+from config import my_env, work_dir, nproc, fastq_dir, salmon_dir, salmon_index_dir, star_index_dir, star_dir, EARLY_STOPPING, PIPELINE_TYPE
 from logger import log_output, logger
 from utils import PipelineError
 
@@ -218,22 +218,16 @@ def star(srr_id, metadata):
 
 
 @log_output
-def deseq2_star(srr_id):
+def deseq2(srr_id):
+    if PIPELINE_TYPE == "STAR":
+        rscript_path = "/opt/TAtlas/DESeq2/STAR_count_normalization.R"
+    elif PIPELINE_TYPE == "Salmon":
+        rscript_path = "/opt/TAtlas/DESeq2/Salmon_count_normalization.R"
+    else:
+        raise PipelineError("Invalid pipeline type in DESeq2", "DESeq2 pipeline type error")
+
     deseq2_result = subprocess.run(
-        ["Rscript", "/opt/TAtlas/DESeq2/STAR_count_normalization.R", srr_id],
-        capture_output=True, text=True, env=my_env, cwd=work_dir
-    )
-
-    if deseq2_result.returncode != 0:
-        raise PipelineError(deseq2_result.stderr, "DESeq2 error")
-
-    return deseq2_result
-
-
-@log_output
-def deseq2_salmon(srr_id):
-    deseq2_result = subprocess.run(
-        ["Rscript", "/opt/TAtlas/DESeq2/Salmon_count_normalization.R", srr_id],
+        ["Rscript", rscript_path, srr_id],
         capture_output=True, text=True, env=my_env, cwd=work_dir
     )
 

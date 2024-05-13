@@ -6,7 +6,7 @@ from moto import mock_aws
 from consumer import start_pipeline
 from utils import PipelineError, clean_dir
 from config import sra_dir, fastq_dir, salmon_dir, deseq2_dir
-from pipeline_steps import prefetch, fasterq_dump, salmon, deseq2_salmon
+from pipeline_steps import prefetch, fasterq_dump
 from test_setup import BaseCase
 
 
