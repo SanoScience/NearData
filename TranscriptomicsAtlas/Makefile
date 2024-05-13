@@ -1,5 +1,5 @@
-docker: build_docker push_docker
-
+salmon: build_salmon push_salmon
+star: build_star push_star
 aws: auth_aws build_aws push_aws
 
 
