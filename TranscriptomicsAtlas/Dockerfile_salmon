@@ -1,5 +1,5 @@
 FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /opt/TAtlas
 
 ### Python modules and utils
@@ -29,8 +29,6 @@ RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-
         | tar -zx -C /opt/TAtlas/ && \
     echo 'export PATH="$PATH":/opt/TAtlas/salmon-latest_linux_x86_64/bin' >> ~/.bashrc
 
-# Config for sratoolkit untill I find a way to configure it using cli/bash
-COPY data/.ncbi /root/.ncbi
 COPY data/salmon_indexes/release111/salmon_index_release111 /opt/TAtlas/salmon_index_release111/
 COPY data/DESeq2/tx2gene.gencode.v42.csv /opt/TAtlas/DESeq2/tx2gene.gencode.v42.csv
 COPY src/scripts/Salmon_count_normalization.R /opt/TAtlas/DESeq2/Salmon_count_normalization.R

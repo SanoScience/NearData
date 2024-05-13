@@ -8,11 +8,10 @@ sudo apt-get install awscli wget ca-certificates -y  --no-install-recommends
 
 sudo chown -R ubuntu /opt
 ### SRA-TOOLKIT
-mkdir -p /home/ubuntu/TAtlas/sratoolkit
 wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz -O - | tar -zx -C /opt/TAtlas
 echo 'export PATH="$PATH":/opt/TAtlas/sratoolkit.3.0.1-ubuntu64/bin' >> ~/.bashrc
 
-#### STAR
+### STAR
 wget https://github.com/alexdobin/STAR/archive/2.7.10b.tar.gz -O - | tar -zx -C /opt/TAtlas
 echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/bin/Linux_x86_64' >> ~/.bashrc
 

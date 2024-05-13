@@ -26,7 +26,7 @@ command_to_run="STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg3
 	 --outSAMattributes Standard"
 
 for SRA_ID in "${SRA_IDs[@]}"; do
-    sra_size=$(ls -l --b=M  /home/ubuntu/TAtlas/sratoolkit/sra/$SRA_ID.sra | cut -d " " -f5 | sed 's/M//')
+    sra_size=$(ls -l --b=M  /home/ubuntu/TAtlas/sra/$SRA_ID.sra | cut -d " " -f5 | sed 's/M//')
 
     start_time=$(date +%s.%N)
 

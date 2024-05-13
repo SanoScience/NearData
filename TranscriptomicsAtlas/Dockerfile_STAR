@@ -28,8 +28,6 @@ RUN Rscript -e 'BiocManager::install(c("DESeq2", "tximport"))'
 RUN wget https://github.com/alexdobin/STAR/archive/2.7.10b.tar.gz -O - | tar -zx -C /opt/TAtlas
 RUN echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/bin/Linux_x86_64' >> ~/.bashrc
 
-# Config for sratoolkit untill I find a way to configure it using cli/bash
-COPY data/.ncbi /root/.ncbi
 COPY data/DESeq2/SRR11982817_ref_release111 /opt/TAtlas/DESeq2/SRR11982817_ref_release111
 COPY src/scripts/STAR_count_normalization.R /opt/TAtlas/DESeq2/STAR_count_normalization.R
 COPY src/Consumer /opt/TAtlas/Consumer

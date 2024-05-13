@@ -7,7 +7,8 @@ from datetime import datetime
 
 import backoff
 
-from config import my_env, work_dir, nproc, fastq_dir, salmon_dir, salmon_index_dir, star_index_dir, star_dir, EARLY_STOPPING, PIPELINE_TYPE
+from config import my_env, work_dir, nproc, sra_dir, fastq_dir, salmon_dir, salmon_index_dir, star_index_dir, star_dir, \
+    EARLY_STOPPING, PIPELINE_TYPE
 from logger import log_output, logger
 from utils import PipelineError
 
@@ -15,10 +16,8 @@ from utils import PipelineError
 @backoff.on_exception(backoff.constant, Exception, max_tries=2, logger=logger)
 @log_output
 def prefetch(srr_id):
-    prefetch_result = subprocess.run(
-        ["prefetch", srr_id, "--min-size", "200m", "--max-size", "30g"],
-        capture_output=True, text=True, env=my_env, cwd=work_dir
-    )
+    prefetch_cmd = ["prefetch", srr_id, "--output-file", f"{sra_dir}/{srr_id}.sra", "--min-size", "200m", "--max-size", "30g"]
+    prefetch_result = subprocess.run(prefetch_cmd, capture_output=True, text=True, env=my_env, cwd=work_dir)
 
     if "is smaller than minimum allowed: skipped" in prefetch_result.stderr:
         raise PipelineError(prefetch_result.stderr, "SRA file too small")
@@ -35,11 +34,9 @@ def prefetch(srr_id):
 
 @backoff.on_exception(backoff.constant, Exception, max_tries=2, logger=logger)
 @log_output
-def fasterq_dump(srr_id, metadata=None):
-    fasterq_result = subprocess.run(
-        ["fasterq-dump", srr_id, "--outdir", fastq_dir, "--threads", nproc, "--force"],
-        capture_output=True, text=True, env=my_env, cwd=work_dir
-    )
+def fasterq_dump(srr_id, metadata=None):  # --mem limit set memory dfl 100MB xd
+    fasterq_cmd = ["fasterq-dump", f"{sra_dir}/{srr_id}.sra", "--outdir", fastq_dir, "--threads", nproc, "--force"]
+    fasterq_result = subprocess.run(fasterq_cmd, capture_output=True, text=True, env=my_env, cwd=work_dir)
 
     if fasterq_result.returncode != 0:
         raise PipelineError(fasterq_result.stderr, "fasterq-dump error")
@@ -96,13 +93,13 @@ def salmon(srr_id, metadata):
 
 @log_output
 def load_star_index():
-    cmd = ["STAR",
-           "--genomeDir", star_index_dir,
-           "--genomeLoad", "LoadAndExit",
-           "--outFileNamePrefix", f"{work_dir}/STAR_load_index_log/",
-           ]
+    star_load_index_cmd = ["STAR",
+                           "--genomeDir", star_index_dir,
+                           "--genomeLoad", "LoadAndExit",
+                           "--outFileNamePrefix", f"{work_dir}/STAR_load_index_log/",
+                           ]
 
-    index_load_result = subprocess.run(cmd, capture_output=True, text=True, env=my_env, cwd=work_dir)
+    index_load_result = subprocess.run(star_load_index_cmd, capture_output=True, text=True, env=my_env, cwd=work_dir)
 
     return index_load_result
 
@@ -226,10 +223,8 @@ def deseq2(srr_id):
     else:
         raise PipelineError("Invalid pipeline type in DESeq2", "DESeq2 pipeline type error")
 
-    deseq2_result = subprocess.run(
-        ["Rscript", rscript_path, srr_id],
-        capture_output=True, text=True, env=my_env, cwd=work_dir
-    )
+    deseq2_cmd = ["Rscript", rscript_path, srr_id]
+    deseq2_result = subprocess.run(deseq2_cmd, capture_output=True, text=True, env=my_env, cwd=work_dir)
 
     if deseq2_result.returncode != 0:
         raise PipelineError(deseq2_result.stderr, "DESeq2 error")

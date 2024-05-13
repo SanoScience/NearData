@@ -1,5 +1,5 @@
 FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /opt/TAtlas
 
 ### Python modules and utils
@@ -38,8 +38,6 @@ RUN pip3 install moto[sqs,s3,dynamodb]==5.0.1 pytest==8.0.0 --no-cache-dir
 RUN mkdir /root/.aws
 RUN echo "[default]\n aws_access_key_id = test\n aws_secret_access_key = test" >> /root/.aws/credentials
 
-# Config for sratoolkit untill I find a way to configure it using cli/bash
-COPY data/.ncbi /root/.ncbi
 COPY data/DESeq2/tx2gene.gencode.v42.csv /opt/TAtlas/DESeq2/tx2gene.gencode.v42.csv
 COPY data/DESeq2/SRR11982817_ref_chr22_release111 /opt/TAtlas/DESeq2/SRR11982817_ref_release111/
 
@@ -55,7 +53,7 @@ COPY src/Consumer /opt/TAtlas/Consumer
 COPY src/Tests/ /opt/TAtlas/Consumer
 
 RUN sed -i '12,15s/^/# /' /opt/TAtlas/Consumer/logger.py  # comment out lines with watchtower logging to disable it
-RUN sed -i '19s~.*~        ["prefetch", srr_id, "--max-size", "30g"],~' /opt/TAtlas/Consumer/pipeline_steps.py  # disable small file processing check to use small file as test input
+RUN sed -i '19s~.*~    prefetch_cmd = ["prefetch", srr_id, "--output-file", f"{sra_dir}/{srr_id}.sra", "--max-size", "30g"]~' /opt/TAtlas/Consumer/pipeline_steps.py  # disable small file processing check to use small file as test input
 
 ENV pipeline_type="Salmon"
 ENTRYPOINT ["pytest", "/opt/TAtlas/Consumer/test_salmon_pipeline.py", "-o", "log_cli=true", "-m", "essential", "-s"]
