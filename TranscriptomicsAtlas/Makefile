@@ -4,11 +4,17 @@ aws: auth_aws build_aws push_aws
 
 
 ### DOCKER ###
-build_docker:
+build_salmon:
 	docker build -t piotrkica/salmonpipeline:latest -f Dockerfile_salmon .
 
-push_docker:
+push_salmon:
 	docker push piotrkica/salmonpipeline:latest
+
+build_star:
+	docker build -t piotrkica/star_pipeline:latest -f Dockerfile_STAR .
+
+push_star:
+	docker push piotrkica/star_pipeline:latest
 
 ### AWS ###
 auth_aws:
