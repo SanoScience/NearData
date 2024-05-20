@@ -67,8 +67,10 @@ def process_message_hpc(pipeline_class, message):
             return
 
         try:
-            if PIPELINE_TYPE == "prestage":
-                pipeline.prestage()
+            if PIPELINE_TYPE == "prefetch":
+                pipeline.prefetch_only()
+            elif PIPELINE_TYPE == "fasterq-dump":
+                pipeline.fasterq_dump_only()
             else:
                 pipeline.alignment()
 
@@ -99,7 +101,7 @@ def start_pipeline():
         else:
             process_message = process_message_hpc
 
-        if PIPELINE_TYPE == "prestage":
+        if PIPELINE_TYPE in ["prefetch", "fasterq-dump"]:
             pipeline_class = Pipeline
         elif PIPELINE_TYPE == "Salmon":
             pipeline_class = SalmonPipeline

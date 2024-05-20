@@ -28,11 +28,12 @@ class Pipeline:
         self.metadata = dict()
         self.metadata["pipeline_start_time"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-    def prestage(self):
+    def prefetch_only(self):
         self.make_timestamps(
             prefetch, self.srr_id
         )
 
+    def fasterq_dump_only(self):
         self.make_timestamps(
             fasterq_dump, self.srr_id, self.metadata
         )
