@@ -17,6 +17,9 @@ salmon quant --threads $(nproc) --useVBOpt -i /opt/TAtlas/salmon_index_release11
 # DESeq2_salmon
 Rscript /opt/TAtlas/DESeq2/Salmon_count_normalization.R $SRA_ID
 
+# STAR LoadIndexOnly
+STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_111/ --genomeLoad LoadAndExit --outFileNamePrefix /home/ubuntu/TAtlas/STAR/tmp
+
 #STAR  with single fastq
 STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_111/ \
 	 --genomeLoad LoadAndKeep --runThreadN $(nproc) \
@@ -41,4 +44,3 @@ STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_11
 
 # DESeq2_STAR
 Rscript /opt/TAtlas/DESeq2/STAR_count_normalization.R $SRA_ID
-
