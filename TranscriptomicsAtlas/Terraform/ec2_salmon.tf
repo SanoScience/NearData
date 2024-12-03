@@ -1,7 +1,7 @@
 resource "aws_launch_template" "NearData_lt" {
   name          = "NearData_lt"
   image_id      = "ami-0e62e90846e861cad"
-  instance_type = "r6a.2xlarge"
+  instance_type = "c7a.xlarge"
   key_name      = "neardata-pk2"
   user_data     = base64encode(file("init_Salmon.sh"))
   ebs_optimized = true
@@ -19,17 +19,17 @@ resource "aws_launch_template" "NearData_lt" {
     arn = data.aws_iam_instance_profile.NearData_ec2_role.arn
   }
 
-#  instance_market_options {
-#    market_type = "spot"
-#    spot_options {
-#      instance_interruption_behavior = "terminate"  # TODO handle termination request in code
-#    }
-#  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
 
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs {
-      volume_size = 400
+      volume_size = 550
       volume_type = "gp3"
       iops        = 3000
       throughput  = 500

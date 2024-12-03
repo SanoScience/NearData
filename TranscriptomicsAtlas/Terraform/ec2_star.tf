@@ -19,12 +19,12 @@ resource "aws_launch_template" "STAR_lt" {
     arn = data.aws_iam_instance_profile.NearData_ec2_role.arn
   }
 
-#  instance_market_options {
-#    market_type = "spot"
-#    spot_options {
-#      instance_interruption_behavior = "terminate"
-#    }
-#  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
 
   block_device_mappings {
     device_name = "/dev/sda1"
