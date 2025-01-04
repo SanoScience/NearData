@@ -4,16 +4,18 @@
 sudo apt-get remove needrestart -y
 
 sudo apt-get update
-sudo apt-get install awscli wget ca-certificates -y  --no-install-recommends
+sudo apt-get install awscli wget ca-certificates build-essential make gcc libz-dev -y --no-install-recommends
 
 sudo chown -R ubuntu /opt
+mkdir /opt/TAtlas
 ### SRA-TOOLKIT
 wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz -O - | tar -zx -C /opt/TAtlas
 echo 'export PATH="$PATH":/opt/TAtlas/sratoolkit.3.0.1-ubuntu64/bin' >> ~/.bashrc
 
 ### STAR
 wget https://github.com/alexdobin/STAR/archive/2.7.10b.tar.gz -O - | tar -zx -C /opt/TAtlas
-echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/bin/Linux_x86_64' >> ~/.bashrc
+cd /opt/TAtlas/STAR-2.7.10b/source && make STAR
+echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/source' >> ~/.bashrc
 
 ### PYTHON MODULES
 sudo apt-get install python3-pip -y --no-install-recommends

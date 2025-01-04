@@ -4,9 +4,10 @@
 sudo apt-get remove needrestart -y
 
 sudo apt-get update
-sudo apt-get install awscli wget ca-certificates -y  --no-install-recommends
+sudo apt-get install awscli wget ca-certificates -y --no-install-recommends
 
 sudo chown -R ubuntu /opt
+mkdir /opt/TAtlas
 ### SRA-TOOLKIT
 wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz -O - | tar -zx -C /opt/TAtlas
 echo 'export PATH="$PATH":/opt/TAtlas/sratoolkit.3.0.1-ubuntu64/bin' >> ~/.bashrc
