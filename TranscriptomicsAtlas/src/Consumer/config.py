@@ -3,7 +3,7 @@ import os
 nproc = str(len(os.sched_getaffinity(0)))
 my_env = {**os.environ, 'PATH': '/opt/TAtlas/sratoolkit.3.0.1-ubuntu64/bin:'
                                 '/opt/TAtlas/salmon-latest_linux_x86_64/bin:'
-                                '/opt/TAtlas/STAR-2.7.10b/bin/Linux_x86_64:' + os.environ['PATH']}
+                                '/opt/TAtlas/STAR-2.7.10b/source:' + os.environ['PATH']}
 index_release = os.environ.get("index_release", "")
 work_dir = "/home/ubuntu/TAtlas"
 sra_dir = f"{work_dir}/sra"
@@ -16,7 +16,7 @@ star_dir = f"{work_dir}/STAR"
 star_data_dir = "/opt/TAtlas/STAR_data"
 star_index_dir = f"/opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_{index_release}/"
 
-EARLY_STOPPING = os.environ.get("EARLY_STOPPING", True)
+EARLY_STOPPING = os.environ.get("EARLY_STOPPING", "True").lower() == "true"
 INTERRUPTION_MONITORING = os.environ.get("INTERRUPTION_MONITORING", False)
 PIPELINE_TYPE = os.environ.get("pipeline_type", "STAR")
 EXECUTION_MODE = os.environ.get("execution_mode", "EC2")

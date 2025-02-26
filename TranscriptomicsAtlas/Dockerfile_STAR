@@ -1,10 +1,11 @@
 FROM ubuntu:22.04
+# TODO build image
 ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /opt/TAtlas
 
 ### Python modules and utils
 RUN apt-get update && \
-    apt-get install wget ca-certificates software-properties-common dirmngr python3-pip -y --no-install-recommends && \
+    apt-get install wget ca-certificates software-properties-common dirmngr python3-pip awscli -y --no-install-recommends && \
     pip3 install boto3 watchtower requests backoff --no-cache-dir
 
 ### SRA-TOOLKIT
@@ -26,14 +27,15 @@ RUN Rscript -e 'BiocManager::install(c("DESeq2", "tximport"))'
 
 ### STAR
 RUN wget https://github.com/alexdobin/STAR/archive/2.7.10b.tar.gz -O - | tar -zx -C /opt/TAtlas
-RUN echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/bin/Linux_x86_64' >> ~/.bashrc
+RUN cd /opt/TAtlas/STAR-2.7.10b/source && make STAR
+RUN echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/source' >> ~/.bashrc
 
 COPY data/DESeq2/SRR11982817_ref_release111 /opt/TAtlas/DESeq2/SRR11982817_ref_release111
 COPY src/scripts/STAR_count_normalization.R /opt/TAtlas/DESeq2/STAR_count_normalization.R
 COPY src/Consumer /opt/TAtlas/Consumer
 
 ENV AWS_DEFAULT_REGION="us-east-1"
-ENV execution_mode="HPC_Container"
+ENV execution_mode="Fargate"
 ENV index_release="111"
 ENV pipeline_type="STAR"
 

@@ -31,7 +31,8 @@ RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-
 
 ### STAR
 RUN wget https://github.com/alexdobin/STAR/archive/2.7.10b.tar.gz -O - | tar -zx -C /opt/TAtlas
-RUN echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/bin/Linux_x86_64' >> ~/.bashrc
+RUN cd /opt/TAtlas/STAR-2.7.10b/source && make STAR
+RUN echo 'export PATH="$PATH":/opt/TAtlas/STAR-2.7.10b/source' >> ~/.bashrc
 
 RUN pip3 install moto[sqs,s3,dynamodb]==5.0.1 pytest==8.0.0 --no-cache-dir
 
