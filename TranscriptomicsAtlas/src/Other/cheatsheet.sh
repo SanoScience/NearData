@@ -1,5 +1,5 @@
 SRA_ID="SRR11982817"
-work_dir="/home/ubuntu/TAtlas"
+work_dir="/TAtlas"
 fastq_dir="$work_dir/fastq"
 star_dir="$work_dir/STAR"
 
@@ -18,7 +18,7 @@ salmon quant --threads $(nproc) --useVBOpt -i /opt/TAtlas/salmon_index_release11
 Rscript /opt/TAtlas/DESeq2/Salmon_count_normalization.R $SRA_ID
 
 # STAR LoadIndexOnly
-STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_111/ --genomeLoad LoadAndExit --outFileNamePrefix /home/ubuntu/TAtlas/STAR/tmp
+STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_111/ --genomeLoad LoadAndExit --outFileNamePrefix $work_dir/STAR/tmp
 
 #STAR  with single fastq
 STAR --genomeDir /opt/TAtlas/STAR_data/STAR_index/STAR_index_hg38_gtf_release_111/ \

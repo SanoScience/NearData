@@ -13,7 +13,7 @@
 apptainer run --home /home/ubuntu --compat \
               --mount type=bind,source=/net/people/plgrid/plgpkica/.aws/,destination=/home/ubuntu/.aws/ \
               --mount type=bind,source=/net/people/plgrid/plgpkica/.ncbi/,destination=/home/ubuntu/.ncbi/ \
-              --mount type=bind,source=$TMPDIR,destination=/home/ubuntu/TAtlas \
+              --mount type=bind,source=$TMPDIR,destination=/TAtlas \
               --env AWS_SHARED_CREDENTIALS_FILE=/home/ubuntu/.aws/credentials \
               --env SLURM_JOB_ID=$SLURM_JOB_ID \
               --env SLURM_ARRAY_TASK_ID=SLURM_ARRAY_TASK_ID \

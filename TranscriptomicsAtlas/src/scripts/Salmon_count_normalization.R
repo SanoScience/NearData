@@ -12,7 +12,7 @@ stimulous = "stimulus"
 control = "control"
 
 # import salmon data to DESeq2
-dir = "/home/ubuntu/TAtlas/salmon"
+dir = "/TAtlas/salmon"
 samples_all = data.frame(samples = SRX, pop = 1.1, center = "HPC", run = SRX, condition = "stimulus")
 rownames(samples_all) = samples_all$run
 
@@ -22,7 +22,7 @@ names(files) = samples$run
 
 tx2gene <- read_delim("/opt/TAtlas/DESeq2/tx2gene.gencode.v42.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
-output_dir = file.path("/home/ubuntu/TAtlas/R_output/", SRX)
+output_dir = file.path("/TAtlas/R_output/", SRX)
 dir.create(output_dir)
 
 txi = tximport(files, type = "salmon", tx2gene = tx2gene)

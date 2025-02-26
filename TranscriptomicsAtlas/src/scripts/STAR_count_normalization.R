@@ -6,8 +6,8 @@ suppressMessages(library(DESeq2))
 args <- commandArgs(trailingOnly = TRUE)
 SRX <- args[1]
 
-input_dir = "/home/ubuntu/TAtlas/STAR"
-output_dir = file.path("/home/ubuntu/TAtlas/R_output", SRX)
+input_dir = "/TAtlas/STAR"
+output_dir = file.path("/TAtlas/R_output", SRX)
 dir.create(output_dir)
 
 #metadata

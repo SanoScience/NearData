@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SRA_IDs=("SRR6192356" "SRR20688788" "SRR11869226")
-work_dir="/home/ubuntu/TAtlas"
+work_dir="/TAtlas"
 fastq_dir="$work_dir/fastq"
 salmon_dir="$work_dir/salmon"
 csv_file="Salmon_exec_times.csv"
@@ -16,7 +16,7 @@ instance_id=$(wget -q -O - http://169.254.169.254/latest/meta-data/instance-id)
 instance_type=$(aws ec2 describe-instances --instance-ids $instance_id --query 'Reservations[*].Instances[*].[InstanceType]' --output text --region us-east-1)
 
 for SRA_ID in "${SRA_IDs[@]}"; do
-    sra_size=$(ls -l --b=M  /home/ubuntu/TAtlas/sra/$SRA_ID.sra | cut -d " " -f5 | sed 's/M//')
+    sra_size=$(ls -l --b=M /TAtlas/sra/$SRA_ID.sra | cut -d " " -f5 | sed 's/M//')
 
     for n_threads in "${threads_array[@]}"; do
         echo "Running command with $n_threads threads..."
