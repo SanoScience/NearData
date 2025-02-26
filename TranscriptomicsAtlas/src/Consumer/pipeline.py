@@ -5,7 +5,7 @@ from datetime import datetime
 
 import boto3
 
-from aws_utils import srr_id_in_metadata_table, get_instance_id, get_aws_instance_metadata
+from aws_utils import srr_id_in_metadata_table, get_instance_id, get_ec2_instance_metadata, get_fargate_instance_metadata
 from config import nproc, index_release, sra_dir, fastq_dir, metadata_dir, EXECUTION_MODE, PIPELINE_TYPE
 from pipeline_steps import prefetch, fasterq_dump
 from logger import logger
@@ -70,7 +70,9 @@ class Pipeline:
         self.metadata["SRR_filesize_bytes"] = self.measure_sra_size()
         self.metadata["fastq_filesize_bytes"] = self.measure_fastq_size()
         if EXECUTION_MODE == "EC2":
-            get_aws_instance_metadata(self.metadata)
+            get_ec2_instance_metadata(self.metadata)
+        if EXECUTION_MODE == "Fargate":
+            get_fargate_instance_metadata(self.metadata)
         elif EXECUTION_MODE == "HPC_container":
             self.metadata["instance_type"] = os.environ["SLURM_CLUSTER_NAME"]
 

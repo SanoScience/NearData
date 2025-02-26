@@ -96,7 +96,7 @@ def start_pipeline():
         queue = boto3.resource("sqs").get_queue_by_name(QueueName=os.environ["queue_name"])
         logger.info("Awaiting messages")
 
-        if EXECUTION_MODE == "EC2" or EXECUTION_MODE == "test":
+        if EXECUTION_MODE == "EC2" or EXECUTION_MODE == "Fargate" or EXECUTION_MODE == "test":
             process_message = process_message_ec2
         else:
             process_message = process_message_hpc

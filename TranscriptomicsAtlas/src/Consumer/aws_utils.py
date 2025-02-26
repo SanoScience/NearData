@@ -1,6 +1,7 @@
 import os
 import boto3
 import requests
+import subprocess
 
 aws_metadata_url = 'http://169.254.169.254/latest/meta-data/'
 
@@ -38,7 +39,7 @@ def terminate_itself_in_asg(decrease_capacity):
     asg.terminate_instance_in_auto_scaling_group(InstanceId=instance_id, ShouldDecrementDesiredCapacity=decrease_capacity)
 
 
-def get_aws_instance_metadata(metadata):
+def get_ec2_instance_metadata(metadata):
     instance_id = requests.get(aws_metadata_url + 'instance-id').text
 
     ec2 = boto3.client('ec2')
@@ -53,3 +54,25 @@ def get_aws_instance_metadata(metadata):
     metadata["EBS_Iops"] = volume_metadata["Volumes"][0]["Iops"]
     metadata["EBS_VolumeType"] = volume_metadata["Volumes"][0]["VolumeType"]
     metadata["EBS_Throughput"] = volume_metadata["Volumes"][0]["Throughput"]
+
+
+def get_fargate_instance_metadata(metadata):
+    ecs_metadata_url = os.environ["ECS_CONTAINER_METADATA_URI_V4"]
+    ecs_metadata_response = requests.get(ecs_metadata_url).json()
+    cluster_id, task_id = ecs_metadata_response["Labels"]['com.amazonaws.ecs.task-arn'].split("/")[1:3]
+    task_metadata_response = boto3.client("ecs").describe_tasks(cluster=cluster_id, tasks=[task_id])
+
+    volumes = task_metadata_response["tasks"][0]["attachments"]
+    for volume in volumes:
+        if volume["type"] == "AmazonElasticBlockStorage":  # assuming only one attachment of EBS
+            for vol_detail in volume["details"]:
+                if vol_detail["name"] == "volumeId":
+                    volume_id = vol_detail["value"]
+                    break
+
+    volume_metadata = boto3.client("ec2").describe_volumes(VolumeIds=[volume_id])
+    metadata["EBS_Size"] = volume_metadata["Volumes"][0]["Size"]
+    metadata["EBS_Iops"] = volume_metadata["Volumes"][0]["Iops"]
+    metadata["EBS_VolumeType"] = volume_metadata["Volumes"][0]["VolumeType"]
+    metadata["EBS_Throughput"] = volume_metadata["Volumes"][0]["Throughput"]
+    metadata["cpu_model"] = subprocess.check_output("lscpu | grep 'Model name'", shell=True, text=True).split(":")[1].strip()
