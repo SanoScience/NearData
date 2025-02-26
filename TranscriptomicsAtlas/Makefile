@@ -16,15 +16,25 @@ build_star:
 push_star:
 	docker push piotrkica/star_pipeline:latest
 
-### AWS ###
-auth_aws:
+### Salmon Serverless ###
+auth_salmon_aws:
 	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 542811361644.dkr.ecr.us-east-1.amazonaws.com/neardata_registry
 
-build_aws:
+build_salmon_aws:
 	docker build -t 542811361644.dkr.ecr.us-east-1.amazonaws.com/neardata_registry:salmon_pipeline -f Dockerfile_salmon .
 
-push_aws:
+push_salmon_aws:
 	docker push 542811361644.dkr.ecr.us-east-1.amazonaws.com/neardata_registry:salmon_pipeline
+
+### STAR Serverless ###
+auth_star_aws:
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 542811361644.dkr.ecr.us-east-1.amazonaws.com/neardata-star-fargate
+
+build_star_aws:
+	docker build -t 542811361644.dkr.ecr.us-east-1.amazonaws.com/neardata-star-fargate:STAR_fargate -f Dockerfile_STAR .
+
+push_star_aws:
+	docker push 542811361644.dkr.ecr.us-east-1.amazonaws.com/neardata-star-fargate:STAR_fargate
 
 ### SYNC SOURCE CODE ###
 sync-salmon:
