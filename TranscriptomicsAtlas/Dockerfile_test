@@ -4,7 +4,7 @@ WORKDIR /opt/TAtlas
 
 ### Python modules and utils
 RUN apt-get update && \
-    apt-get install wget ca-certificates software-properties-common dirmngr python3-pip -y --no-install-recommends && \
+    apt-get install wget ca-certificates software-properties-common dirmngr python3-pip awscli -y --no-install-recommends && \
     pip3 install boto3 watchtower requests backoff --no-cache-dir
 
 ### SRA-TOOLKIT
@@ -25,8 +25,7 @@ RUN Rscript -e 'install.packages(c("readr", "dplyr", "BiocManager", "jsonlite", 
 RUN Rscript -e 'BiocManager::install(c("DESeq2", "tximport"))'
 
 ### SALMON
-RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz -qO -  \
-        | tar -zx -C /opt/TAtlas/ && \
+RUN wget https://github.com/COMBINE-lab/salmon/releases/download/v1.10.0/salmon-1.10.0_linux_x86_64.tar.gz -qO - | tar -zx -C /opt/TAtlas/ && \
     echo 'export PATH="$PATH":/opt/TAtlas/salmon-latest_linux_x86_64/bin' >> ~/.bashrc
 
 ### STAR

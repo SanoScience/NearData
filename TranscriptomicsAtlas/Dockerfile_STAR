@@ -16,7 +16,7 @@ RUN wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubunt
 ### R
 RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
 RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
-RUN echo "LC_ALL=C.UTF-8 R" >> /etc/environment
+RUN echo "LC_ALL=C.UTF-8" >> /etc/environment
 RUN apt-get install r-base-dev=4.4.0-1.2204.0 -y --no-install-recommends
 
 ### R packages
